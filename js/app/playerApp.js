@@ -40,6 +40,14 @@ function refreshPlayControls() {
 }
 
 async function connectCalendar() {
+  if (!window.GCAL_CONFIG?.CLIENT_ID || !window.GCAL_CONFIG?.API_KEY) {
+    setStatus(
+      "Config manquante (config.local.js). Verifiez le deploiement GitHub Pages.",
+      null,
+      null,
+    );
+    return;
+  }
   if (!window.PlayerCalendarAuth.isReady()) {
     setStatus("Google Calendar: initialisation...", null, null);
     return;
@@ -89,16 +97,17 @@ async function resolveDestinationFromCalendar() {
 
 async function startPlaybackSession() {
   const track = window.PlayerMusicLibrary.getSelectedTrack();
-  if (!track) return;
+  const source = window.PlayerMusicLibrary.getTrackSource(track);
+  if (!source) return;
 
   window.initSpatialAudio();
-  window.setSpatialAudioFile(track.file);
+  window.setSpatialAudioSource(source);
   await window.startSpatialMusic();
 
   isPlaying = true;
   refreshPlayControls();
   ui.trackTitle.textContent = track.name;
-  ui.trackArtist.textContent = "Lecture en cours";
+  ui.trackArtist.textContent = track.artist || "Collection Murmur";
 
   try {
     const destination = await resolveDestinationFromCalendar();
@@ -123,18 +132,33 @@ function stopPlaybackSession() {
   window.PlayerNavigationEngine.stop();
   isPlaying = false;
   refreshPlayControls();
-  ui.trackArtist.textContent = "Bibliotheque locale";
+  const track = window.PlayerMusicLibrary.getSelectedTrack();
+  ui.trackArtist.textContent = track?.artist || "Collection Murmur";
   setStatus(null, "Navigation: inactive", "Alignement: —");
+}
+
+function showSelectedTrack(track) {
+  if (!track) return;
+  ui.trackTitle.textContent = track.name;
+  ui.trackArtist.textContent = track.artist || "Collection Murmur";
+  refreshPlayControls();
+}
+
+function initBundledMusic() {
+  const catalog = window.MURMUR_BUNDLED_MUSIC;
+  if (!catalog?.length) return;
+
+  window.PlayerMusicLibrary.loadBundledCatalog(catalog);
+  const track = window.PlayerMusicLibrary.pickRandomTrack();
+  window.PlayerMusicLibrary.renderLibraryList(ui.libraryList);
+  showSelectedTrack(track);
 }
 
 function onLibraryInputChange(event) {
   window.PlayerMusicLibrary.addFiles(event.target.files);
   window.PlayerMusicLibrary.renderLibraryList(ui.libraryList);
   if (window.PlayerMusicLibrary.getTrackCount() === 1) {
-    window.PlayerMusicLibrary.selectTrack(0);
-    ui.trackTitle.textContent =
-      window.PlayerMusicLibrary.getSelectedTrack().name;
-    refreshPlayControls();
+    showSelectedTrack(window.PlayerMusicLibrary.selectTrack(0));
   }
 }
 
@@ -145,6 +169,13 @@ function initPlayerApp() {
   ui.connectCalendarButton.addEventListener("click", connectCalendar);
   ui.playButton.addEventListener("click", startPlaybackSession);
   ui.pauseButton.addEventListener("click", stopPlaybackSession);
+
+  window.addEventListener("player-track-selected", (event) => {
+    if (!isPlaying) showSelectedTrack(event.detail);
+    window.PlayerMusicLibrary.renderLibraryList(ui.libraryList);
+  });
+
+  initBundledMusic();
 
   window.addEventListener("player-nav-update", (event) => {
     const { navLine, alignLine } = event.detail;
@@ -157,7 +188,28 @@ function initPlayerApp() {
 
   window.addEventListener("player-calendar-ready", () => {
     ui.connectCalendarButton.disabled = false;
+    if (window.PlayerCalendarAuth.isReady()) {
+      setStatus("Prochain evenement: connectez Google Calendar", null, null);
+    }
   });
+
+  window.setTimeout(() => {
+    if (!window.GCAL_CONFIG?.CLIENT_ID || !window.GCAL_CONFIG?.API_KEY) {
+      setStatus(
+        "Config manquante — config.local.js introuvable sur le serveur.",
+        null,
+        null,
+      );
+      return;
+    }
+    if (!window.PlayerCalendarAuth.isReady()) {
+      setStatus(
+        "Google Calendar: echec d'initialisation (origine OAuth ou cle API ?)",
+        null,
+        null,
+      );
+    }
+  }, 5000);
 
   refreshPlayControls();
   setStatus("Prochain evenement: connectez Google Calendar", null, null);

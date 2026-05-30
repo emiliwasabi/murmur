@@ -11,6 +11,14 @@ L'utilisateur écoute de la musique et s'oriente en suivant la position percue d
 
 APIs a activer : Google Calendar API, Maps JavaScript API, Geocoding API, Directions API.
 
+## Musique integree
+
+1. Deposer tes fichiers MP3 dans le dossier `music/`
+2. Les lister dans `js/app/bundledMusic.js` (url, name, artist)
+3. Au chargement, un morceau aleatoire est selectionne automatiquement
+
+L'upload de fichiers reste disponible en option.
+
 ## Lancer en local (Mac)
 
 ```bash

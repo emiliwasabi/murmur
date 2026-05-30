@@ -112,6 +112,11 @@ function startDirectionalTone() {
 
 function setSpatialAudioFile(file) {
   if (!file) return;
+  setSpatialAudioSource(file);
+}
+
+function setSpatialAudioSource(source) {
+  if (!source) return;
   initSpatialAudio();
   ensureAudioGraph();
   if (mediaElement) {
@@ -119,15 +124,23 @@ function setSpatialAudioFile(file) {
     mediaElement.currentTime = 0;
   }
   if (mediaSource) mediaSource.disconnect();
-  if (mediaObjectUrl) URL.revokeObjectURL(mediaObjectUrl);
+  if (mediaObjectUrl) {
+    URL.revokeObjectURL(mediaObjectUrl);
+    mediaObjectUrl = null;
+  }
   if (oscillator) {
     oscillator.stop();
     oscillator.disconnect();
     oscillator = null;
   }
 
-  mediaObjectUrl = URL.createObjectURL(file);
-  mediaElement = new Audio(mediaObjectUrl);
+  if (typeof source === "string") {
+    mediaElement = new Audio(encodeURI(source));
+  } else {
+    mediaObjectUrl = URL.createObjectURL(source);
+    mediaElement = new Audio(mediaObjectUrl);
+  }
+
   mediaElement.loop = true;
   mediaElement.crossOrigin = "anonymous";
   mediaSource = audioCtx.createMediaElementSource(mediaElement);
@@ -207,6 +220,7 @@ function stopDirectionalTone() {
 window.initSpatialAudio = initSpatialAudio;
 window.startDirectionalTone = startDirectionalTone;
 window.setSpatialAudioFile = setSpatialAudioFile;
+window.setSpatialAudioSource = setSpatialAudioSource;
 window.startSpatialMusic = startSpatialMusic;
 window.setSoundDirection = setSoundDirection;
 window.setGuidanceAudioMode = setGuidanceAudioMode;

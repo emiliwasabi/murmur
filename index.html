@@ -21,6 +21,7 @@
     <script defer src="js/app/routeService.js"></script>
     <script defer src="js/app/calendarAuth.js"></script>
     <script defer src="js/app/calendarNextEvent.js"></script>
+    <script defer src="js/app/bundledMusic.js"></script>
     <script defer src="js/app/musicLibrary.js"></script>
     <script defer src="js/app/spatialNavigation.js"></script>
     <script defer src="js/app/navigationEngine.js"></script>
@@ -35,7 +36,7 @@
 
       <section class="panel now-playing">
         <p id="track_title" class="track-title">Aucun morceau</p>
-        <p id="track_artist" class="track-artist">Bibliotheque locale</p>
+        <p id="track_artist" class="track-artist">Collection Murmur</p>
         <div class="controls">
           <button id="play_button" type="button" class="btn btn-primary" disabled>
             Play
@@ -46,7 +47,7 @@
 
       <section class="panel">
         <label class="file-label">
-          Ajouter de la musique
+          Ajouter d'autres morceaux
           <input id="library_input" type="file" accept="audio/*" multiple />
         </label>
         <ul id="library_list" class="library-list"></ul>
