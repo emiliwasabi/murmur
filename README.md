@@ -25,10 +25,16 @@ Ouvrir : http://127.0.0.1:5500/
 
 ## iPhone (HTTPS obligatoire)
 
-Deployer sur GitHub Pages puis ouvrir l'URL HTTPS sur l'iPhone.
+### Deploiement GitHub Pages
 
-Dans Google Cloud Console, ajouter l'origine OAuth :
-`https://votre-pseudo.github.io`
+1. Ajouter les secrets Actions : `GCAL_CLIENT_ID`, `GCAL_API_KEY`, `GCAL_MAP_ID`
+2. Settings → Pages → Source : **GitHub Actions**
+3. Pousser sur `main` — le workflow `.github/workflows/deploy-pages.yml` genere `config.local.js` et deploie
+4. Ouvrir sur l'iPhone : `https://emiliwasabi.github.io/murmur/`
+
+Dans Google Cloud Console :
+- Origine OAuth : `https://emiliwasabi.github.io`
+- Referrer API key : `https://emiliwasabi.github.io/murmur/*`
 
 Ajouter sur l'ecran d'accueil iPhone via Safari : Partager → Sur l'ecran d'accueil.
 

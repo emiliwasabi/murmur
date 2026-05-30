@@ -60,9 +60,14 @@ async function resolveDestinationFromCalendar() {
   }
   if (!calendarConnected) return null;
 
-  const event = await window.PlayerCalendarNextEvent.fetchNextEventWithLocation();
+  const event =
+    await window.PlayerCalendarNextEvent.fetchNextEventWithLocation();
   if (!event) {
-    setStatus("Aucun evenement avec lieu trouve", "Navigation: musique centree", null);
+    setStatus(
+      "Aucun evenement avec lieu trouve",
+      "Navigation: musique centree",
+      null,
+    );
     return null;
   }
 

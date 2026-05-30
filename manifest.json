@@ -1,6 +1,6 @@
 {
-  "name": "Ambient Compass",
-  "short_name": "Compass",
+  "name": "Murmur",
+  "short_name": "Murmur",
   "description": "Navigation spatiale par la musique",
   "start_url": "./index.html",
   "display": "standalone",

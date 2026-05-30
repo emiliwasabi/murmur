@@ -1,0 +1,47 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate config.local.js from secrets
+        env:
+          CLIENT_ID: ${{ secrets.GCAL_CLIENT_ID }}
+          API_KEY: ${{ secrets.GCAL_API_KEY }}
+          MAP_ID: ${{ secrets.GCAL_MAP_ID }}
+        run: |
+          cat > config.local.js << EOF
+          window.GCAL_CONFIG = {
+            CLIENT_ID: "${CLIENT_ID}",
+            API_KEY: "${API_KEY}",
+            MAP_ID: "${MAP_ID}",
+          };
+          EOF
+
+      - uses: actions/configure-pages@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
