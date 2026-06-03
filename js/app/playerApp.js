@@ -95,6 +95,14 @@ async function resolveDestinationFromCalendar() {
   };
 }
 
+async function togglePlayback() {
+  if (isPlaying) {
+    stopPlaybackSession();
+    return;
+  }
+  await startPlaybackSession();
+}
+
 async function startPlaybackSession() {
   const track = window.PlayerMusicLibrary.getSelectedTrack();
   const source = window.PlayerMusicLibrary.getTrackSource(track);
@@ -211,20 +219,24 @@ function initPlayerApp() {
     }
   }, 5000);
 
+  const bleButton = document.getElementById("ble_connect_button");
+  if (bleButton) {
+    window.MurmurBLE.onButtonPress = () => {
+      togglePlayback();
+    };
+    bleButton.addEventListener("click", async () => {
+      const ok = await window.MurmurBLE.connect();
+      bleButton.textContent = ok ? "Murmur connecte" : "Connecter Murmur";
+    });
+  }
+
   refreshPlayControls();
   setStatus("Prochain evenement: connectez Google Calendar", null, null);
 }
 
-// Bouton pour connecter le device physique
-document
-  .getElementById("ble_connect_button")
-  ?.addEventListener("click", async () => {
-    await window.MurmurBLE.connect();
-    window.MurmurBLE.onButtonPress = () => {
-      // Remplace par ta fonction play/pause existante
-      const audio = document.querySelector("audio") || window._audioElement;
-      if (audio?.paused) audio.play();
-      else audio?.pause();
-    };
-  });
+window.PlayerApp = {
+  togglePlayback,
+  isPlaying: () => isPlaying,
+};
+
 document.addEventListener("DOMContentLoaded", initPlayerApp);

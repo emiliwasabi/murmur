@@ -1,31 +1,47 @@
-// bleController.js — connexion BLE au device Murmur
 const MURMUR_SERVICE = "12345678-1234-1234-1234-123456789abc";
 const MURMUR_CHAR = "abcd1234-ab12-ab12-ab12-abcdef123456";
 
+let connectedDevice = null;
+
 window.MurmurBLE = {
+  onButtonPress: null,
+  isConnected: () => Boolean(connectedDevice?.gatt?.connected),
+
   async connect() {
+    if (!navigator.bluetooth) {
+      console.error("Web Bluetooth non disponible sur ce navigateur.");
+      return false;
+    }
+
     try {
       const device = await navigator.bluetooth.requestDevice({
         filters: [{ name: "Murmur" }],
         optionalServices: [MURMUR_SERVICE],
       });
-      const server = await device.gatt.connect();
-      const service = await server.getPrimaryService(MURMUR_SERVICE);
-      const char = await service.getCharacteristic(MURMUR_CHAR);
 
-      await char.startNotifications();
-      char.addEventListener("characteristicvaluechanged", (e) => {
-        const val = new TextDecoder().decode(e.target.value);
-        if (val === "play") {
-          // Déclenche play/pause sur ton audio
-          window.MurmurBLE.onButtonPress?.();
-        }
+      device.addEventListener("gattserverdisconnected", () => {
+        connectedDevice = null;
+        console.log("Murmur BLE deconnecte");
       });
 
-      console.log("Murmur BLE connecté");
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(MURMUR_SERVICE);
+      const characteristic = await service.getCharacteristic(MURMUR_CHAR);
+
+      await characteristic.startNotifications();
+      characteristic.addEventListener("characteristicvaluechanged", (event) => {
+        const message = new TextDecoder().decode(event.target.value).trim();
+        console.log("[Murmur BLE]", message);
+        window.MurmurBLE.onButtonPress?.();
+      });
+
+      connectedDevice = device;
+      console.log("Murmur BLE connecte");
       return true;
-    } catch (err) {
-      console.error("BLE error:", err);
+    } catch (error) {
+      if (error.name !== "NotFoundError") {
+        console.error("BLE error:", error);
+      }
       return false;
     }
   },
