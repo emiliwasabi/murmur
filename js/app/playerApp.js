@@ -215,4 +215,16 @@ function initPlayerApp() {
   setStatus("Prochain evenement: connectez Google Calendar", null, null);
 }
 
+// Bouton pour connecter le device physique
+document
+  .getElementById("ble_connect_button")
+  ?.addEventListener("click", async () => {
+    await window.MurmurBLE.connect();
+    window.MurmurBLE.onButtonPress = () => {
+      // Remplace par ta fonction play/pause existante
+      const audio = document.querySelector("audio") || window._audioElement;
+      if (audio?.paused) audio.play();
+      else audio?.pause();
+    };
+  });
 document.addEventListener("DOMContentLoaded", initPlayerApp);
