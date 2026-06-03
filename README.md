@@ -19,6 +19,14 @@ APIs a activer : Google Calendar API, Maps JavaScript API, Geocoding API, Direct
 
 L'upload de fichiers reste disponible en option.
 
+## Bouton BLE (XIAO ESP32-S3)
+
+Sketch : `firmware/murmur_button/murmur_button.ino`
+
+1. Flasher le firmware (corrige `GATT_INSUF_AUTHENTICATION` : pas de pairing requis)
+2. Ouvrir l'app en **Chrome** sur **HTTPS** (pas Safari iPhone)
+3. Cliquer **Connecter bouton Murmur**, puis appuyer sur le bouton physique
+
 ## Lancer en local (Mac)
 
 ```bash

@@ -15,8 +15,9 @@ window.MurmurBLE = {
 
     try {
       const device = await navigator.bluetooth.requestDevice({
-        filters: [{ name: "Murmur" }],
+        filters: [{ services: [MURMUR_SERVICE] }],
         optionalServices: [MURMUR_SERVICE],
+        acceptAllDevices: false,
       });
 
       device.addEventListener("gattserverdisconnected", () => {
