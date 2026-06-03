@@ -7,7 +7,10 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="theme-color" content="#0a0a0a" />
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="css/player.css" />
@@ -26,6 +29,7 @@
     <script defer src="js/app/spatialNavigation.js"></script>
     <script defer src="js/app/navigationEngine.js"></script>
     <script defer src="js/app/playerApp.js"></script>
+    <script defer src="js/app/bleController.js"></script>
   </head>
   <body>
     <div class="app">
@@ -38,10 +42,17 @@
         <p id="track_title" class="track-title">Aucun morceau</p>
         <p id="track_artist" class="track-artist">Collection Murmur</p>
         <div class="controls">
-          <button id="play_button" type="button" class="btn btn-primary" disabled>
+          <button
+            id="play_button"
+            type="button"
+            class="btn btn-primary"
+            disabled
+          >
             Play
           </button>
-          <button id="pause_button" type="button" class="btn" disabled>Pause</button>
+          <button id="pause_button" type="button" class="btn" disabled>
+            Pause
+          </button>
         </div>
       </section>
 
@@ -54,15 +65,23 @@
       </section>
 
       <section class="panel status-panel">
-        <button id="connect_calendar_button" type="button" class="btn btn-ghost">
+        <button
+          id="connect_calendar_button"
+          type="button"
+          class="btn btn-ghost"
+        >
           Connecter Google Calendar
         </button>
-        <p id="event_status" class="status-line">Prochain evenement: en attente</p>
+        <p id="event_status" class="status-line">
+          Prochain evenement: en attente
+        </p>
         <p id="nav_status" class="status-line">Navigation: inactive</p>
         <p id="alignment_status" class="status-line">Alignement: —</p>
       </section>
     </div>
-
+    <button id="ble_connect_button" type="button" class="btn btn-ghost">
+      Connecter Murmur
+    </button>
     <script
       defer
       src="https://accounts.google.com/gsi/client"
