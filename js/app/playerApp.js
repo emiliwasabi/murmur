@@ -9,6 +9,8 @@ const ui = {
   eventStatus: null,
   navStatus: null,
   alignmentStatus: null,
+  bleStatus: null,
+  bleButton: null,
 };
 
 let isPlaying = false;
@@ -25,6 +27,8 @@ function bindUi() {
   ui.eventStatus = document.getElementById("event_status");
   ui.navStatus = document.getElementById("nav_status");
   ui.alignmentStatus = document.getElementById("alignment_status");
+  ui.bleStatus = document.getElementById("ble_status");
+  ui.bleButton = document.getElementById("ble_connect_button");
 }
 
 function setStatus(eventLine, navLine, alignLine) {
@@ -37,6 +41,39 @@ function refreshPlayControls() {
   const hasTrack = Boolean(window.PlayerMusicLibrary.getSelectedTrack());
   ui.playButton.disabled = !hasTrack || isPlaying;
   ui.pauseButton.disabled = !isPlaying;
+}
+
+function updateBleUi(connected) {
+  if (!ui.bleStatus || !ui.bleButton) return;
+
+  ui.bleStatus.classList.remove("connected", "disconnected");
+  if (connected) {
+    ui.bleStatus.textContent = "Bouton: connecte — pret";
+    ui.bleStatus.classList.add("connected");
+    ui.bleButton.textContent = "Deconnecter le bouton";
+  } else {
+    ui.bleStatus.textContent = "Bouton: deconnecte — appuyez pour connecter";
+    ui.bleStatus.classList.add("disconnected");
+    ui.bleButton.textContent = "Connecter le bouton";
+  }
+}
+
+async function handleBleButtonClick() {
+  if (window.MurmurBLE.isConnected()) {
+    window.MurmurBLE.disconnect();
+    updateBleUi(false);
+    return;
+  }
+
+  updateBleUi(false);
+  ui.bleStatus.textContent = "Bouton: connexion en cours...";
+
+  const ok = await window.MurmurBLE.connect();
+  updateBleUi(ok);
+  if (!ok) {
+    ui.bleStatus.textContent = "Bouton: echec — reessayez";
+    ui.bleStatus.classList.add("disconnected");
+  }
 }
 
 async function connectCalendarViaBackend() {
@@ -281,7 +318,7 @@ function initPlayerApp() {
     }
   }, 8000);
 
-  const bleButton = document.getElementById("ble_connect_button");
+  const bleButton = ui.bleButton;
   if (bleButton) {
     window.MurmurBLE.onButtonPress = () => {
       togglePlayback();
@@ -290,14 +327,14 @@ function initPlayerApp() {
       const hint = window.MurmurBLE.getUnsupportedHint();
       bleButton.title = hint || "";
       bleButton.addEventListener("click", () => {
-        setStatus(hint, null, null);
+        if (ui.bleStatus) ui.bleStatus.textContent = hint;
       });
     } else {
-      bleButton.addEventListener("click", async () => {
-        const ok = await window.MurmurBLE.connect();
-        bleButton.textContent = ok ? "Murmur connecte" : "Connecter bouton Murmur";
-        if (!ok) setStatus("Connexion BLE annulee ou echouee", null, null);
+      bleButton.addEventListener("click", handleBleButtonClick);
+      window.addEventListener("murmur-ble-state", (event) => {
+        updateBleUi(event.detail.connected);
       });
+      updateBleUi(window.MurmurBLE.isConnected());
     }
   }
 

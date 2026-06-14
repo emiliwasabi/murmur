@@ -30,6 +30,14 @@ jobs:
           MAP_ID: ${{ secrets.GCAL_MAP_ID }}
           CALENDAR_BACKEND_URL: ${{ secrets.GCAL_CALENDAR_BACKEND_URL }}
         run: |
+          if [ -z "$CLIENT_ID" ] || [ -z "$API_KEY" ]; then
+            echo "Erreur: GCAL_CLIENT_ID ou GCAL_API_KEY manquant dans les secrets GitHub."
+            exit 1
+          fi
+          if [ -z "$CALENDAR_BACKEND_URL" ]; then
+            echo "::warning::GCAL_CALENDAR_BACKEND_URL est vide — Calendar ne marchera pas dans Bluefy."
+            echo "Ajoutez l'URL Render dans Settings → Secrets → Actions → GCAL_CALENDAR_BACKEND_URL"
+          fi
           cat > config.local.js << EOF
           window.GCAL_CONFIG = {
             CLIENT_ID: "${CLIENT_ID}",
@@ -39,10 +47,11 @@ jobs:
             CALENDAR_BACKEND_URL: "${CALENDAR_BACKEND_URL}",
           };
           EOF
+          echo "config.local.js genere (CALENDAR_BACKEND_URL renseigne: $([ -n "$CALENDAR_BACKEND_URL" ] && echo oui || echo non))"
 
       - uses: actions/configure-pages@v4
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: .
 

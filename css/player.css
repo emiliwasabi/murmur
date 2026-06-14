@@ -132,3 +132,11 @@ body {
   color: #aaa;
   line-height: 1.4;
 }
+
+.ble-status.connected {
+  color: #6ecf8a;
+}
+
+.ble-status.disconnected {
+  color: #e07a7a;
+}
