@@ -1,6 +1,7 @@
 let playerGapiReady = false;
 let playerGisReady = false;
 let playerTokenClient = null;
+let initError = null;
 
 const PLAYER_SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
 const PLAYER_DISCOVERY =
@@ -37,6 +38,63 @@ function usesRedirectOAuth() {
 
 function isPlayerCalendarReady() {
   return playerGapiReady && playerGisReady && Boolean(playerTokenClient);
+}
+
+function getInitDiagnostics() {
+  const { clientId, apiKey } = getPlayerConfig();
+  return {
+    hasConfig: Boolean(window.GCAL_CONFIG),
+    hasClientId: Boolean(clientId),
+    hasApiKey: Boolean(apiKey),
+    gisLoaded: Boolean(window.google?.accounts?.oauth2),
+    gapiLoaded: Boolean(window.gapi),
+    gapiReady: playerGapiReady,
+    gisReady: playerGisReady,
+    tokenClient: Boolean(playerTokenClient),
+    initError,
+    redirectUri: getOAuthRedirectUri(),
+  };
+}
+
+function getInitErrorMessage() {
+  const d = getInitDiagnostics();
+  if (!d.hasConfig || !d.hasClientId || !d.hasApiKey) {
+    return "Config manquante — config.local.js introuvable ou incomplet.";
+  }
+  if (initError) return initError;
+  if (!d.gisLoaded) {
+    return "Script Google (accounts.google.com) bloque ou lent dans Bluefy. Rechargez la page.";
+  }
+  if (!d.gapiLoaded) {
+    return "Script Google API (apis.google.com) bloque ou lent dans Bluefy. Rechargez la page.";
+  }
+  if (!d.gisReady) {
+    return "OAuth Google pas pret. Verifiez l'origine et l'URI de redirection dans Google Cloud Console.";
+  }
+  if (!d.gapiReady) {
+    return "Google Calendar API pas chargee. Verifiez la cle API et ses restrictions (referrer).";
+  }
+  return "Google Calendar: initialisation incomplete.";
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing?.dataset.loaded === "true") {
+      resolve();
+      return;
+    }
+    const script = existing || document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      resolve();
+    };
+    script.onerror = () =>
+      reject(new Error(`Impossible de charger ${src}`));
+    if (!existing) document.head.appendChild(script);
+  });
 }
 
 function storeAccessToken(tokenResponse) {
@@ -97,23 +155,35 @@ function handleOAuthError(error) {
   );
 }
 
-window.playerGapiInit = function playerGapiInit() {
+async function initGapiClient() {
   const { clientId, apiKey } = getPlayerConfig();
-  if (!clientId || !apiKey) return;
+  if (!clientId || !apiKey) return false;
 
-  gapi.load("client", async () => {
-    await gapi.client.init({ apiKey, discoveryDocs: [PLAYER_DISCOVERY] });
-    playerGapiReady = true;
-    if (restoreStoredToken()) {
-      window.dispatchEvent(new CustomEvent("player-calendar-authenticated"));
-    }
-    window.dispatchEvent(new CustomEvent("player-calendar-ready"));
+  await new Promise((resolve, reject) => {
+    window.gapi.load("client", {
+      callback: resolve,
+      onerror: reject,
+    });
   });
-};
 
-window.playerCalendarAuthInit = function playerCalendarAuthInit() {
+  await window.gapi.client.init({
+    apiKey,
+    discoveryDocs: [PLAYER_DISCOVERY],
+  });
+
+  playerGapiReady = true;
+  if (restoreStoredToken()) {
+    window.dispatchEvent(new CustomEvent("player-calendar-authenticated"));
+  }
+  return true;
+}
+
+function initGisClient() {
   const { clientId } = getPlayerConfig();
-  if (!clientId) return;
+  if (!clientId) return false;
+  if (!window.google?.accounts?.oauth2) {
+    throw new Error("google.accounts.oauth2 indisponible");
+  }
 
   const redirect = usesRedirectOAuth();
   const config = {
@@ -128,10 +198,35 @@ window.playerCalendarAuthInit = function playerCalendarAuthInit() {
     config.redirect_uri = getOAuthRedirectUri();
   }
 
-  playerTokenClient = google.accounts.oauth2.initTokenClient(config);
+  playerTokenClient = window.google.accounts.oauth2.initTokenClient(config);
   playerGisReady = true;
-  window.dispatchEvent(new CustomEvent("player-calendar-ready"));
-};
+  return true;
+}
+
+async function bootstrapCalendarAuth() {
+  const { clientId, apiKey } = getPlayerConfig();
+  if (!clientId || !apiKey) {
+    initError = "CLIENT_ID ou API_KEY manquant dans config.local.js";
+    window.dispatchEvent(new CustomEvent("player-calendar-ready"));
+    return;
+  }
+
+  try {
+    await Promise.all([
+      loadScript("https://accounts.google.com/gsi/client"),
+      loadScript("https://apis.google.com/js/api.js"),
+    ]);
+
+    initGisClient();
+    await initGapiClient();
+
+    window.dispatchEvent(new CustomEvent("player-calendar-ready"));
+  } catch (error) {
+    initError = error.message || "Erreur d'initialisation Google";
+    console.error("[CalendarAuth]", error, getInitDiagnostics());
+    window.dispatchEvent(new CustomEvent("player-calendar-ready"));
+  }
+}
 
 function formatAuthError(detail) {
   const code = detail?.error || detail?.type || "";
@@ -142,7 +237,7 @@ function formatAuthError(detail) {
     return "Acces Google Calendar refuse.";
   }
   if (/disallowed|secure|browser|useragent/i.test(`${code} ${detail?.message || ""}`)) {
-    return "Google bloque la connexion dans Bluefy. Ouvrez Nomad dans Safari pour lier Calendar, ou ajoutez l'URI de redirection dans Google Cloud Console.";
+    return "Google bloque la connexion dans Bluefy. Verifiez l'URI de redirection dans Google Cloud Console.";
   }
   return detail?.message || detail?.error_description || code || "Authentification refusee.";
 }
@@ -150,7 +245,7 @@ function formatAuthError(detail) {
 function requestPlayerCalendarAccess() {
   return new Promise((resolve, reject) => {
     if (!isPlayerCalendarReady()) {
-      reject(new Error("Google Calendar pas pret."));
+      reject(new Error(getInitErrorMessage()));
       return;
     }
 
@@ -185,10 +280,19 @@ function requestPlayerCalendarAccess() {
   });
 }
 
+window.playerGapiInit = () => bootstrapCalendarAuth();
+window.playerCalendarAuthInit = () => {};
+
 window.PlayerCalendarAuth = {
   isReady: isPlayerCalendarReady,
   requestAccess: requestPlayerCalendarAccess,
   isAuthenticated: () => restoreStoredToken(),
   usesRedirectOAuth,
   getOAuthRedirectUri,
+  getInitErrorMessage,
+  bootstrap: bootstrapCalendarAuth,
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  window.setTimeout(bootstrapCalendarAuth, 100);
+});

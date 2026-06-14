@@ -226,22 +226,11 @@ function initPlayerApp() {
   window.addEventListener("player-calendar-authenticated", onCalendarAuthenticated);
 
   window.setTimeout(() => {
-    if (!window.GCAL_CONFIG?.CLIENT_ID || !window.GCAL_CONFIG?.API_KEY) {
-      setStatus(
-        "Config manquante — config.local.js introuvable sur le serveur.",
-        null,
-        null,
-      );
-      return;
-    }
     if (!window.PlayerCalendarAuth.isReady()) {
-      setStatus(
-        "Google Calendar: echec d'initialisation (origine OAuth ou cle API ?)",
-        null,
-        null,
-      );
+      setStatus(window.PlayerCalendarAuth.getInitErrorMessage?.() ||
+        "Google Calendar: echec d'initialisation.", null, null);
     }
-  }, 5000);
+  }, 8000);
 
   const bleButton = document.getElementById("ble_connect_button");
   if (bleButton) {
