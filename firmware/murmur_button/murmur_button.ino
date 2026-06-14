@@ -63,7 +63,7 @@ void setup() {
   WiFi.mode(WIFI_OFF);
   esp_coex_preference_set(ESP_COEX_PREFER_BT);
 
-  BLEDevice::init("Murmur");
+  BLEDevice::init("Nomad");
   setMaxBlePower();
 
   BLESecurity *pSecurity = new BLESecurity();
@@ -91,7 +91,7 @@ void setup() {
   pAdvertising->setScanResponse(true);
   BLEDevice::startAdvertising();
 
-  Serial.println("Murmur BLE ready");
+  Serial.println("Nomad BLE ready");
 }
 
 void loop() {

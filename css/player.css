@@ -7,8 +7,8 @@
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  background: #0a0a0a;
-  color: #f5f5f5;
+  background: #f5f5f3;
+  color: #1a1a1a;
   min-height: 100dvh;
 }
 
@@ -33,14 +33,16 @@ body {
 .subtitle {
   margin: 0.35rem 0 0;
   font-size: 0.85rem;
-  color: #888;
+  color: #666;
 }
 
 .panel {
-  background: #141414;
+  background: #ffffff;
+  border: 1px solid #e8e8e4;
   border-radius: 16px;
   padding: 1rem;
   margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .now-playing {
@@ -55,7 +57,7 @@ body {
 
 .track-artist {
   margin: 0.25rem 0 1rem;
-  color: #888;
+  color: #666;
   font-size: 0.9rem;
 }
 
@@ -71,8 +73,8 @@ body {
   padding: 0.65rem 1.25rem;
   font-size: 0.95rem;
   cursor: pointer;
-  background: #2a2a2a;
-  color: #fff;
+  background: #ebebea;
+  color: #1a1a1a;
 }
 
 .btn:disabled {
@@ -81,21 +83,22 @@ body {
 }
 
 .btn-primary {
-  background: #fff;
-  color: #000;
+  background: #1a1a1a;
+  color: #fff;
   min-width: 100px;
 }
 
 .btn-ghost {
   width: 100%;
   background: transparent;
-  border: 1px solid #333;
+  border: 1px solid #d4d4d0;
+  color: #1a1a1a;
 }
 
 .file-label {
   display: block;
   font-size: 0.85rem;
-  color: #aaa;
+  color: #666;
   margin-bottom: 0.75rem;
 }
 
@@ -123,20 +126,20 @@ body {
 
 .library-list li:hover,
 .library-list li.active {
-  background: #222;
+  background: #f0f0ed;
 }
 
 .status-panel .status-line {
   margin: 0.5rem 0 0;
   font-size: 0.82rem;
-  color: #aaa;
+  color: #666;
   line-height: 1.4;
 }
 
 .ble-status.connected {
-  color: #6ecf8a;
+  color: #2d8a4e;
 }
 
 .ble-status.disconnected {
-  color: #e07a7a;
+  color: #c44;
 }

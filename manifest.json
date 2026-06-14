@@ -1,10 +1,10 @@
 {
-  "name": "Murmur",
-  "short_name": "Murmur",
+  "name": "Nomad",
+  "short_name": "Nomad",
   "description": "Navigation spatiale par la musique",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "background_color": "#f5f5f3",
+  "theme_color": "#f5f5f3",
   "orientation": "portrait"
 }

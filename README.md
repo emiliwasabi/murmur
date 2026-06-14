@@ -1,4 +1,4 @@
-# Murmur
+# Nomad
 
 Prototype iPhone de lecteur musical avec navigation spatiale par la musique.
 

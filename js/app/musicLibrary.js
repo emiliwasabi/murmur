@@ -11,7 +11,7 @@ function loadBundledCatalog(catalog) {
     tracks.push({
       url: item.url,
       name: item.name || item.url.split("/").pop(),
-      artist: item.artist || "Collection Murmur",
+      artist: item.artist || "Collection Nomad",
       bundled: true,
     });
   });

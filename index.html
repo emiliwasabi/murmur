@@ -9,12 +9,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
+      content="default"
     />
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" content="#f5f5f3" />
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="css/player.css" />
-    <title>Murmur</title>
+    <title>Nomad</title>
     <script defer src="config.local.js"></script>
     <script defer src="js/guidance/guidanceMath.js"></script>
     <script defer src="js/location/locationTracker.js"></script>
@@ -35,20 +35,15 @@
   <body>
     <div class="app">
       <header class="header">
-        <h1>Murmur</h1>
+        <h1>Nomad</h1>
         <p class="subtitle">Suivez la musique dans l'espace</p>
       </header>
 
       <section class="panel now-playing">
-        <p id="track_title" class="track-title">Aucun morceau</p>
-        <p id="track_artist" class="track-artist">Collection Murmur</p>
+        <p id="track_title" class="track-title">Morceau aleatoire</p>
+        <p id="track_artist" class="track-artist">Appuyez sur Play</p>
         <div class="controls">
-          <button
-            id="play_button"
-            type="button"
-            class="btn btn-primary"
-            disabled
-          >
+          <button id="play_button" type="button" class="btn btn-primary">
             Play
           </button>
           <button id="pause_button" type="button" class="btn" disabled>

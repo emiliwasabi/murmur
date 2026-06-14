@@ -38,8 +38,8 @@ function setStatus(eventLine, navLine, alignLine) {
 }
 
 function refreshPlayControls() {
-  const hasTrack = Boolean(window.PlayerMusicLibrary.getSelectedTrack());
-  ui.playButton.disabled = !hasTrack || isPlaying;
+  const hasTracks = window.PlayerMusicLibrary.getTrackCount() > 0;
+  ui.playButton.disabled = !hasTracks || isPlaying;
   ui.pauseButton.disabled = !isPlaying;
 }
 
@@ -192,9 +192,14 @@ async function togglePlayback() {
 }
 
 async function startPlaybackSession() {
-  const track = window.PlayerMusicLibrary.getSelectedTrack();
+  if (window.PlayerMusicLibrary.getTrackCount() === 0) return;
+
+  const track = window.PlayerMusicLibrary.pickRandomTrack();
   const source = window.PlayerMusicLibrary.getTrackSource(track);
   if (!source) return;
+
+  showSelectedTrack(track);
+  window.PlayerMusicLibrary.renderLibraryList(ui.libraryList);
 
   window.initSpatialAudio();
   window.setSpatialAudioSource(source);
@@ -202,8 +207,6 @@ async function startPlaybackSession() {
 
   isPlaying = true;
   refreshPlayControls();
-  ui.trackTitle.textContent = track.name;
-  ui.trackArtist.textContent = track.artist || "Collection Murmur";
 
   try {
     const destination = await resolveDestinationFromCalendar();
@@ -229,25 +232,24 @@ function stopPlaybackSession() {
   isPlaying = false;
   refreshPlayControls();
   const track = window.PlayerMusicLibrary.getSelectedTrack();
-  ui.trackArtist.textContent = track?.artist || "Collection Murmur";
+  ui.trackArtist.textContent = track?.artist || "Collection Nomad";
   setStatus(null, "Navigation: inactive", "Alignement: —");
 }
 
 function showSelectedTrack(track) {
   if (!track) return;
   ui.trackTitle.textContent = track.name;
-  ui.trackArtist.textContent = track.artist || "Collection Murmur";
+  ui.trackArtist.textContent = track.artist || "Collection Nomad";
   refreshPlayControls();
 }
 
 function initBundledMusic() {
-  const catalog = window.MURMUR_BUNDLED_MUSIC;
+  const catalog = window.NOMAD_BUNDLED_MUSIC;
   if (!catalog?.length) return;
 
   window.PlayerMusicLibrary.loadBundledCatalog(catalog);
-  const track = window.PlayerMusicLibrary.pickRandomTrack();
   window.PlayerMusicLibrary.renderLibraryList(ui.libraryList);
-  showSelectedTrack(track);
+  refreshPlayControls();
 }
 
 function onLibraryInputChange(event) {
